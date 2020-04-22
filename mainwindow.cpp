@@ -5,6 +5,16 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QStringList>
+#include <QTextCharFormat>
+#include <QFont>
+#include <QtGlobal>
+#include <QFontDatabase>
+#include <QRegExp>
+#include <QTextFormat>
+#include <QColor>
+#include <QObject>
+#include <QListIterator>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -47,12 +57,27 @@ void MainWindow::on_pushButton_clicked()
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
 
+   // = reply->readAll();
+   // QJsonDocument document = QJsonDocument::fromJson(reply->readAll());
+   // QJsonObject root = document.object();
+    //ui->textEdit->append(root.keys().at(0) + ": " + root.value(root.keys().at(0)).toString());
+    //ui->textEdit->append(root.keys().at(1) + ": " + root.value(root.keys().at(1)).toString());
+
+
+   // QStringList dataReplylist = root.keys();
+    // data = root.to
+   // QString dataReply(data);
+   // ui->textEdit->setText(dataReply);
     QByteArray data = reply->readAll();
     QString dataReply(data);
-    ui->textEdit->setText(dataReply);
+    QString s ="hello";
+    ui->textEdit->clear();
+    //ui->textEdit->setText(dataReply);
+    setTextTermFormatting(ui->textEdit,dataReply);
+   //
 }
 
-/*void MainWindow::parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat)
+void MainWindow::parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat)
 {
     switch (attribute) {
     case 0 : { // Normal/Default (reset all attributes)
@@ -552,4 +577,4 @@ void MainWindow::setTextTermFormatting(QTextEdit * textEdit, QString const & tex
     cursor.endEditBlock();
     //cursor.movePosition(QTextCursor::Start);
     textEdit->setTextCursor(cursor);
-}*/
+}
