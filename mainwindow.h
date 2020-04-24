@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTextCharFormat>
 #include <QTextEdit>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE

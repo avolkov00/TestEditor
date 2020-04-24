@@ -5,6 +5,7 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QTextCharFormat>
 #include <QFont>
@@ -70,8 +71,9 @@ void MainWindow::on_pushButton_clicked()
    // ui->textEdit->setText(dataReply);
     QByteArray data = reply->readAll();
     QString dataReply(data);
-    QString s ="hello";
     ui->textEdit->clear();
+    dataReply.replace(QString("\u001b[K"),QString("\n"));
+    dataReply.remove(QString("\u001b[m"));
     //ui->textEdit->setText(dataReply);
     setTextTermFormatting(ui->textEdit,dataReply);
    //
@@ -549,7 +551,7 @@ void MainWindow::parseEscapeSequence(int attribute, QListIterator< QString > & i
 void MainWindow::setTextTermFormatting(QTextEdit * textEdit, QString const & text)
 {
     QTextDocument * document = textEdit->document();
-    QRegExp const escapeSequenceExpression(R"(\x1B\[([\d;]+)m)");
+    QRegExp const escapeSequenceExpression(R"(\u001b\[([\d;]+)m)");
     QTextCursor cursor(document);
     QTextCharFormat const defaultTextCharFormat = cursor.charFormat();
     cursor.beginEditBlock();
@@ -557,6 +559,7 @@ void MainWindow::setTextTermFormatting(QTextEdit * textEdit, QString const & tex
     cursor.insertText(text.mid(0, offset));
     QTextCharFormat textCharFormat = defaultTextCharFormat;
     while (!(offset < 0)) {
+        ui->textEdit_2->setText("offset");
         int previousOffset = offset + escapeSequenceExpression.matchedLength();
         QStringList capturedTexts = escapeSequenceExpression.capturedTexts().back().split(';');
         QListIterator< QString > i(capturedTexts);
