@@ -16,6 +16,7 @@
 #include <QColor>
 #include <QObject>
 #include <QListIterator>
+#include <QWidget>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -47,7 +48,7 @@ void MainWindow::on_pushButton_clicked()
     QJsonDocument t;
     t.setObject(object);
     postData.append(t.toJson());
-    ui->textEdit_2->setText(postData);
+    //ui->textEdit_2->setText(postData);
     reply = manager->post(request,postData);
     //QString data;
     //data = reply->readAll();
@@ -59,7 +60,7 @@ void MainWindow::on_pushButton_clicked()
     loop.exec();
 
    // = reply->readAll();
-   // QJsonDocument document = QJsonDocument::fromJson(reply->readAll());
+    //QJsonDocument jsonResponse = QJsonDocument::fromJson(reply->readAll());
    // QJsonObject root = document.object();
     //ui->textEdit->append(root.keys().at(0) + ": " + root.value(root.keys().at(0)).toString());
     //ui->textEdit->append(root.keys().at(1) + ": " + root.value(root.keys().at(1)).toString());
@@ -69,13 +70,46 @@ void MainWindow::on_pushButton_clicked()
     // data = root.to
    // QString dataReply(data);
    // ui->textEdit->setText(dataReply);
-    QByteArray data = reply->readAll();
-    QString dataReply(data);
-    ui->textEdit->clear();
-    dataReply.replace(QString("\u001b[K"),QString("\n"));
-    dataReply.remove(QString("\u001b[m"));
+    QByteArray wholeArrayReply = reply->readAll();
+    QString wholeStringReply(wholeArrayReply);
+    wholeStringReply.replace(QString("\\u001b[K"),QString("\n"));
+    wholeStringReply.remove(QString("\\u001b[m"));
+    wholeStringReply.remove(QString("\\r"));
+    wholeStringReply.replace(QString("\\n"),QString("\n"));
+    setTextTermFormatting(ui->textEdit_3,wholeStringReply);
+    wholeStringReply=ui->textEdit_3->toPlainText();
+    QJsonDocument wholeJsonReply = QJsonDocument::fromJson(wholeStringReply.toUtf8());
+    QJsonObject wholeJsonOblectReply = wholeJsonReply.object();
+
+    QJsonObject specCompilerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(0)).toObject();
+    QString specCompilerResultInString(specCompilerResult.value(specCompilerResult.keys().at(0)).toString()+specCompilerResult.value(specCompilerResult.keys().at(1)).toString()+specCompilerResult.value(specCompilerResult.keys().at(2)).toString());
+    ui->textEdit_3->setText(specCompilerResultInString);
+
+    if (specCompilerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
+        QJsonObject exampleCompilerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(1)).toObject();
+        QString exampleCompilerResultInString=exampleCompilerResult.value(exampleCompilerResult.keys().at(0)).toString()+exampleCompilerResult.value(exampleCompilerResult.keys().at(1)).toString()+exampleCompilerResult.value(exampleCompilerResult.keys().at(2)).toString();
+        ui->textEdit_4->setText(exampleCompilerResultInString);
+
+        if(exampleCompilerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
+            QJsonObject linkerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(2)).toObject();
+            QString linkerResultInString(linkerResult.value(linkerResult.keys().at(0)).toString()+linkerResult.value(linkerResult.keys().at(1)).toString()+linkerResult.value(linkerResult.keys().at(2)).toString());
+            ui->textEdit_5->setText(linkerResultInString);
+
+            if(linkerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
+                QJsonObject runnerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(3)).toObject();
+                QString runnerResultInString(runnerResult.value(runnerResult.keys().at(0)).toString()+runnerResult.value(runnerResult.keys().at(1)).toString()+runnerResult.value(runnerResult.keys().at(2)).toString());
+                ui->textEdit_6->setText(runnerResultInString);
+            }
+        }
+    }
+    ui->tabWidget->setCurrentWidget(ui->tab_2);
+    //ui->textEdit_3->append(root.keys().at(0) + ": " + root.value(root.keys().at(0)).toString());
+   // ui->textEdit_3->setText(jsonObject["specCompilerResult"].toString());
+    //dataReply.replace(QString("\\u001b[K"),QString(""));
+  //  dataReply.remove(QString("\\u001b[m"));
+  //  dataReply.replace(QString("\\r\\n"),QString(""));
     //ui->textEdit->setText(dataReply);
-    setTextTermFormatting(ui->textEdit,dataReply);
+    //setTextTermFormatting(ui->textEdit,dataReply);
    //
 }
 
@@ -551,7 +585,7 @@ void MainWindow::parseEscapeSequence(int attribute, QListIterator< QString > & i
 void MainWindow::setTextTermFormatting(QTextEdit * textEdit, QString const & text)
 {
     QTextDocument * document = textEdit->document();
-    QRegExp const escapeSequenceExpression(R"(\u001b\[([\d;]+)m)");
+    QRegExp const escapeSequenceExpression(R"(\\u001b\[([\d;]+)m)");
     QTextCursor cursor(document);
     QTextCharFormat const defaultTextCharFormat = cursor.charFormat();
     cursor.beginEditBlock();
