@@ -72,18 +72,23 @@ void MainWindow::on_pushButton_clicked()
    // ui->textEdit->setText(dataReply);
     QByteArray wholeArrayReply = reply->readAll();
     QString wholeStringReply(wholeArrayReply);
-    wholeStringReply.replace(QString("\\u001b[K"),QString("\n"));
-    wholeStringReply.remove(QString("\\u001b[m"));
-    wholeStringReply.remove(QString("\\r"));
-    wholeStringReply.replace(QString("\\n"),QString("\n"));
-    setTextTermFormatting(ui->textEdit_3,wholeStringReply);
-    wholeStringReply=ui->textEdit_3->toPlainText();
-    QJsonDocument wholeJsonReply = QJsonDocument::fromJson(wholeStringReply.toUtf8());
+   // wholeStringReply.replace(QString("[K"),QString("\n"));
+    //wholeStringReply.remove(QString("[m"));
+   // wholeStringReply.remove(QString("\\r"));
+  //  wholeStringReply.replace(QString("\\n"),QString("\n"));
+   // setTextTermFormatting(ui->textEdit_3,wholeStringReply);
+  //  wholeStringReply=ui->textEdit_3->toPlainText();
+    QJsonDocument wholeJsonReply = QJsonDocument::fromJson(wholeArrayReply);
     QJsonObject wholeJsonOblectReply = wholeJsonReply.object();
 
     QJsonObject specCompilerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(0)).toObject();
     QString specCompilerResultInString(specCompilerResult.value(specCompilerResult.keys().at(0)).toString()+specCompilerResult.value(specCompilerResult.keys().at(1)).toString()+specCompilerResult.value(specCompilerResult.keys().at(2)).toString());
-    ui->textEdit_3->setText(specCompilerResultInString);
+    specCompilerResultInString.replace(QString("[K"),QString("\n"));
+    specCompilerResultInString.remove(QString("[m"));
+    specCompilerResultInString.remove(QString("\\r"));
+    specCompilerResultInString.replace(QString("\\n"),QString("\n"));
+    setTextTermFormatting(ui->textEdit_3,specCompilerResultInString);
+  //  ui->textEdit_3->setText(specCompilerResultInString);
 
     if (specCompilerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
         QJsonObject exampleCompilerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(1)).toObject();
@@ -585,7 +590,7 @@ void MainWindow::parseEscapeSequence(int attribute, QListIterator< QString > & i
 void MainWindow::setTextTermFormatting(QTextEdit * textEdit, QString const & text)
 {
     QTextDocument * document = textEdit->document();
-    QRegExp const escapeSequenceExpression(R"(\\u001b\[([\d;]+)m)");
+    QRegExp const escapeSequenceExpression(R"(\[([\d;]+)m)");
     QTextCursor cursor(document);
     QTextCharFormat const defaultTextCharFormat = cursor.charFormat();
     cursor.beginEditBlock();
