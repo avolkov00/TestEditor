@@ -83,8 +83,8 @@ void MainWindow::on_pushButton_clicked()
 
     QJsonObject specCompilerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(0)).toObject();
     QString specCompilerResultInString(specCompilerResult.value(specCompilerResult.keys().at(0)).toString()+specCompilerResult.value(specCompilerResult.keys().at(1)).toString()+specCompilerResult.value(specCompilerResult.keys().at(2)).toString());
-    specCompilerResultInString.replace(QString("[K"),QString("\n"));
-    specCompilerResultInString.remove(QString("[m"));
+    specCompilerResultInString.replace(QString("(?:|\\u001[K"),QString("\n"));
+    specCompilerResultInString.remove(QString("(?:|\\u001[m"));
     specCompilerResultInString.remove(QString("\\r"));
     specCompilerResultInString.replace(QString("\\n"),QString("\n"));
     setTextTermFormatting(ui->textEdit_3,specCompilerResultInString);
@@ -590,7 +590,7 @@ void MainWindow::parseEscapeSequence(int attribute, QListIterator< QString > & i
 void MainWindow::setTextTermFormatting(QTextEdit * textEdit, QString const & text)
 {
     QTextDocument * document = textEdit->document();
-    QRegExp const escapeSequenceExpression(R"(\[([\d;]+)m)");
+    QRegExp const escapeSequenceExpression(R"((?:|\\u001)\[([\d;]+)m)");
     QTextCursor cursor(document);
     QTextCharFormat const defaultTextCharFormat = cursor.charFormat();
     cursor.beginEditBlock();
