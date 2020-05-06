@@ -17,11 +17,14 @@
 #include <QObject>
 #include <QListIterator>
 #include <QWidget>
+#include <QSyntaxHighlighter>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    //Highlighter hl;
+  //  hl = new QSyntaxHighlighter (ui->textEdit);
 }
 
 MainWindow::~MainWindow()
@@ -93,21 +96,30 @@ void MainWindow::on_pushButton_clicked()
     if (specCompilerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
         QJsonObject exampleCompilerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(1)).toObject();
         QString exampleCompilerResultInString=exampleCompilerResult.value(exampleCompilerResult.keys().at(0)).toString()+exampleCompilerResult.value(exampleCompilerResult.keys().at(1)).toString()+exampleCompilerResult.value(exampleCompilerResult.keys().at(2)).toString();
-        ui->textEdit_4->setText(exampleCompilerResultInString);
+        exampleCompilerResultInString.remove(QString("(?:|\\u001[m"));
+        exampleCompilerResultInString.remove(QString("\\r"));
+        exampleCompilerResultInString.replace(QString("\\n"),QString("\n"));
+        setTextTermFormatting(ui->textEdit_4,exampleCompilerResultInString);
 
         if(exampleCompilerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
             QJsonObject linkerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(2)).toObject();
             QString linkerResultInString(linkerResult.value(linkerResult.keys().at(0)).toString()+linkerResult.value(linkerResult.keys().at(1)).toString()+linkerResult.value(linkerResult.keys().at(2)).toString());
-            ui->textEdit_5->setText(linkerResultInString);
+            linkerResultInString.remove(QString("(?:|\\u001[m"));
+            linkerResultInString.remove(QString("\\r"));
+            linkerResultInString.replace(QString("\\n"),QString("\n"));
+            setTextTermFormatting(ui->textEdit_5,linkerResultInString);
 
             if(linkerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
                 QJsonObject runnerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(3)).toObject();
                 QString runnerResultInString(runnerResult.value(runnerResult.keys().at(0)).toString()+runnerResult.value(runnerResult.keys().at(1)).toString()+runnerResult.value(runnerResult.keys().at(2)).toString());
-                ui->textEdit_6->setText(runnerResultInString);
+                runnerResultInString.remove(QString("(?:|\\u001[m"));
+                runnerResultInString.remove(QString("\\r"));
+                runnerResultInString.replace(QString("\\n"),QString("\n"));
+                setTextTermFormatting(ui->textEdit_6,runnerResultInString);
             }
         }
     }
-    ui->tabWidget->setCurrentWidget(ui->tab_2);
+    //ui->tabWidget->setCurrentWidget(ui->tab_2);
     //ui->textEdit_3->append(root.keys().at(0) + ": " + root.value(root.keys().at(0)).toString());
    // ui->textEdit_3->setText(jsonObject["specCompilerResult"].toString());
     //dataReply.replace(QString("\\u001b[K"),QString(""));
