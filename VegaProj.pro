@@ -30,3 +30,11 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+unix:!macx|win32: LIBS += -L$$PWD/../../QCodeEditor/build/ -lQCodeEditor
+
+INCLUDEPATH += $$PWD/../../QCodeEditor/include
+DEPENDPATH += $$PWD/../../QCodeEditor/include
+
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../../QCodeEditor/build/QCodeEditor.lib
+else:unix:!macx|win32-g++: PRE_TARGETDEPS += $$PWD/../../QCodeEditor/build/libQCodeEditor.a

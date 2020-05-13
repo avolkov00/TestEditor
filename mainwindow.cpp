@@ -18,11 +18,21 @@
 #include <QListIterator>
 #include <QWidget>
 #include <QSyntaxHighlighter>
+#include <QCodeEditor>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
+    ,m_codeEditor(nullptr)
+    ,m_codeEditor2(nullptr)
     , ui(new Ui::MainWindow)
 {
+
     ui->setupUi(this);
+    m_codeEditor = new QCodeEditor(this);
+    m_codeEditor->setObjectName(QString::fromUtf8("codeEditor"));
+    m_codeEditor->setGeometry(QRect(90, 20, 221, 161));
+    m_codeEditor2 = new QCodeEditor(this);
+    m_codeEditor2->setObjectName(QString::fromUtf8("codeEditor2"));
+    m_codeEditor2->setGeometry(QRect(360, 20, 221, 161));
     //Highlighter hl;
   //  hl = new QSyntaxHighlighter (ui->textEdit);
 }
@@ -33,54 +43,50 @@ MainWindow::~MainWindow()
 }
 
 #include <QTextEdit>
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_pushButton_2_clicked()
 {
-    QJsonObject object
+    QJsonObject postObject
     {
-           {"spec", ui->textEdit->toPlainText()},
-           {"example", ui->textEdit_2->toPlainText()}
+           {"login",ui->textEdit_7->toPlainText()},
+           {"password",ui->textEdit_8->toPlainText()},
+           {"action","login"}
+
     };
-   // ui->textEdit->setText(str);
     auto manager = new QNetworkAccessManager();
     QNetworkReply *reply;
     QNetworkRequest request;
-    //request.setHeader();
     request.setRawHeader("Content-Type", "application/json");
     request.setUrl(QUrl("http://vega.fcyb.mirea.ru/testcpp/api/v1/specRunner"));
     QByteArray postData;
-    QJsonDocument t;
-    t.setObject(object);
-    postData.append(t.toJson());
-    //ui->textEdit_2->setText(postData);
+    QJsonDocument postDocument;
+    postDocument.setObject(postObject);
+    postData.append(postDocument.toJson());
     reply = manager->post(request,postData);
-    //QString data;
-    //data = reply->readAll();
-
-    //QNetworkReply *reply = manager->get(request);
-
+    cook=manager->cookieJar();
+}
+void MainWindow::on_pushButton_clicked()
+{
+    QJsonObject postObject
+    {
+           {"spec",m_codeEditor->toPlainText()},
+           {"example",m_codeEditor2->toPlainText()}
+    };
+    auto manager = new QNetworkAccessManager();
+    manager->setCookieJar(cook);
+    QNetworkReply *reply;
+    QNetworkRequest request;
+    request.setRawHeader("Content-Type", "application/json");
+    request.setUrl(QUrl("http://vega.fcyb.mirea.ru/testcpp/api/v1/specRunner"));
+    QByteArray postData;
+    QJsonDocument postDocument;
+    postDocument.setObject(postObject);
+    postData.append(postDocument.toJson());
+    reply = manager->post(request,postData);
     QEventLoop loop;
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
-
-   // = reply->readAll();
-    //QJsonDocument jsonResponse = QJsonDocument::fromJson(reply->readAll());
-   // QJsonObject root = document.object();
-    //ui->textEdit->append(root.keys().at(0) + ": " + root.value(root.keys().at(0)).toString());
-    //ui->textEdit->append(root.keys().at(1) + ": " + root.value(root.keys().at(1)).toString());
-
-
-   // QStringList dataReplylist = root.keys();
-    // data = root.to
-   // QString dataReply(data);
-   // ui->textEdit->setText(dataReply);
     QByteArray wholeArrayReply = reply->readAll();
     QString wholeStringReply(wholeArrayReply);
-   // wholeStringReply.replace(QString("[K"),QString("\n"));
-    //wholeStringReply.remove(QString("[m"));
-   // wholeStringReply.remove(QString("\\r"));
-  //  wholeStringReply.replace(QString("\\n"),QString("\n"));
-   // setTextTermFormatting(ui->textEdit_3,wholeStringReply);
-  //  wholeStringReply=ui->textEdit_3->toPlainText();
     QJsonDocument wholeJsonReply = QJsonDocument::fromJson(wholeArrayReply);
     QJsonObject wholeJsonOblectReply = wholeJsonReply.object();
 
@@ -91,7 +97,6 @@ void MainWindow::on_pushButton_clicked()
     specCompilerResultInString.remove(QString("\\r"));
     specCompilerResultInString.replace(QString("\\n"),QString("\n"));
     setTextTermFormatting(ui->textEdit_3,specCompilerResultInString);
-  //  ui->textEdit_3->setText(specCompilerResultInString);
 
     if (specCompilerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
         QJsonObject exampleCompilerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(1)).toObject();
@@ -632,3 +637,5 @@ void MainWindow::setTextTermFormatting(QTextEdit * textEdit, QString const & tex
     //cursor.movePosition(QTextCursor::Start);
     textEdit->setTextCursor(cursor);
 }
+
+
