@@ -6,6 +6,7 @@
 #include <QTextEdit>
 #include <QCodeEditor>
 #include <QNetworkAccessManager>
+#include <QNetworkCookie>
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -31,6 +32,7 @@ private:
     QCodeEditor* m_codeEditor;
     QCodeEditor* m_codeEditor2;
     QNetworkCookieJar* cook;
+    QList<QNetworkCookie>* cookList;
     Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H

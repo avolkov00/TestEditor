@@ -22,6 +22,8 @@
 #include <QNetworkCookieJar>
 #include <QHttpMultiPart>
 #include <QHttpPart>
+#include <QList>
+#include <QNetworkCookie>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     ,m_codeEditor(nullptr)
@@ -62,11 +64,11 @@ void MainWindow::on_pushButton_2_clicked()
     textPartAction.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"action\""));
     textPartAction.setBody("login");
 
-    multiPart->append(textPartLogin);
-    multiPart->append(textPartPassword);
+
+
     multiPart->append(textPartAction);
-
-
+    multiPart->append(textPartPassword);
+    multiPart->append(textPartLogin);
     auto manager = new QNetworkAccessManager();
     QNetworkReply *reply;
     QNetworkRequest request;
@@ -76,24 +78,32 @@ void MainWindow::on_pushButton_2_clicked()
     QEventLoop loop;
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
-    QByteArray wholeArrayReply = reply->readAll();
-    QString wholeStringReply(wholeArrayReply);
-    cook=new QNetworkCookieJar(manager->cookieJar());
-    m_codeEditor2->setText(wholeStringReply);
+    if (reply->rawHeader("Location")=="login.php" ){
+        m_codeEditor2->setText("Negative Reply");
+    }
+    else if (reply->rawHeader("Location")=="index.php" ){
+        m_codeEditor2->setText("Positive Reply");
+    }
+    else {
+        m_codeEditor2->setText(reply->rawHeader("Location"));
+    }
+    cookList = new QList<QNetworkCookie>((manager->cookieJar()->cookiesForUrl(QUrl("http://vega.fcyb.mirea.ru"))));
 }
 void MainWindow::on_pushButton_clicked()
 {
+    auto manager = new QNetworkAccessManager();
+    QNetworkCookieJar* cookie = new QNetworkCookieJar;
+    cookie->setCookiesFromUrl(*cookList ,QUrl("http://vega.fcyb.mirea.ru"));
+    manager->setCookieJar(cookie);
     QJsonObject postObject
     {
            {"spec",m_codeEditor->toPlainText()},
            {"example",m_codeEditor2->toPlainText()}
     };
-    auto manager = new QNetworkAccessManager();
-    manager->setCookieJar(cook);
     QNetworkReply *reply;
     QNetworkRequest request;
     request.setRawHeader("Content-Type", "application/json");
-    request.setUrl(QUrl("http://vega.fcyb.mirea.ru/testcpp/api/v1/specRunner"));
+    request.setUrl(QUrl("127.0.0.1:8080/api/v1/specRunner"));
     QByteArray postData;
     QJsonDocument postDocument;
     postDocument.setObject(postObject);
