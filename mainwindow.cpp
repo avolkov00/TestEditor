@@ -19,6 +19,9 @@
 #include <QWidget>
 #include <QSyntaxHighlighter>
 #include <QCodeEditor>
+#include <QNetworkCookieJar>
+#include <QHttpMultiPart>
+#include <QHttpPart>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     ,m_codeEditor(nullptr)
@@ -45,24 +48,38 @@ MainWindow::~MainWindow()
 #include <QTextEdit>
 void MainWindow::on_pushButton_2_clicked()
 {
-    QJsonObject postObject
-    {
-           {"login",ui->textEdit_7->toPlainText()},
-           {"password",ui->textEdit_8->toPlainText()},
-           {"action","login"}
+    QHttpMultiPart * multiPart = new QHttpMultiPart ( QHttpMultiPart :: FormDataType);
 
-    };
+    QHttpPart textPartLogin;
+    textPartLogin.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"login\""));
+    textPartLogin.setBody(ui->textEdit_7->toPlainText().toUtf8());
+
+    QHttpPart textPartPassword;
+    textPartPassword.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"password\""));
+    textPartPassword.setBody(ui->textEdit_8->toPlainText().toUtf8());
+
+    QHttpPart textPartAction;
+    textPartAction.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"action\""));
+    textPartAction.setBody("login");
+
+    multiPart->append(textPartLogin);
+    multiPart->append(textPartPassword);
+    multiPart->append(textPartAction);
+
+
     auto manager = new QNetworkAccessManager();
     QNetworkReply *reply;
     QNetworkRequest request;
-    request.setRawHeader("Content-Type", "application/json");
-    request.setUrl(QUrl("http://vega.fcyb.mirea.ru/testcpp/api/v1/specRunner"));
-    QByteArray postData;
-    QJsonDocument postDocument;
-    postDocument.setObject(postObject);
-    postData.append(postDocument.toJson());
-    reply = manager->post(request,postData);
-    cook=manager->cookieJar();
+    request.setRawHeader("Content-Type", "multipart/form-data");
+    request.setUrl(QUrl("http://vega.fcyb.mirea.ru/auth/action.php"));
+    reply = manager->post(request,multiPart);
+    QEventLoop loop;
+    connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    loop.exec();
+    QByteArray wholeArrayReply = reply->readAll();
+    QString wholeStringReply(wholeArrayReply);
+    cook=new QNetworkCookieJar(manager->cookieJar());
+    m_codeEditor2->setText(wholeStringReply);
 }
 void MainWindow::on_pushButton_clicked()
 {

@@ -30,7 +30,7 @@ private slots:
 private:
     QCodeEditor* m_codeEditor;
     QCodeEditor* m_codeEditor2;
-    QNetworkCookieJar* cook=0;
+    QNetworkCookieJar* cook;
     Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H
