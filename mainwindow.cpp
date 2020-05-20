@@ -64,8 +64,6 @@ void MainWindow::on_pushButton_2_clicked()
     textPartAction.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"action\""));
     textPartAction.setBody("login");
 
-
-
     multiPart->append(textPartAction);
     multiPart->append(textPartPassword);
     multiPart->append(textPartLogin);
@@ -87,14 +85,45 @@ void MainWindow::on_pushButton_2_clicked()
     else {
         m_codeEditor2->setText(reply->rawHeader("Location"));
     }
+    if (reply->hasRawHeader("Set-Cookie")){
+        m_codeEditor->setText("Yes");
+        cookieHeader =  new QByteArray(reply->rawHeader("Set-Cookie"));
+    }
+    else m_codeEditor->setText("No");
+
     cookList = new QList<QNetworkCookie>((manager->cookieJar()->cookiesForUrl(QUrl("http://vega.fcyb.mirea.ru"))));
 }
 void MainWindow::on_pushButton_clicked()
 {
+    /*QHttpMultiPart * multiPart = new QHttpMultiPart ( QHttpMultiPart :: FormDataType);
+
+    QHttpPart textPartLogin;
+    textPartLogin.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"login\""));
+    textPartLogin.setBody(ui->textEdit_7->toPlainText().toUtf8());
+
+    QHttpPart textPartPassword;
+    textPartPassword.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"password\""));
+    textPartPassword.setBody(ui->textEdit_8->toPlainText().toUtf8());
+
+    QHttpPart textPartAction;
+    textPartAction.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"action\""));
+    textPartAction.setBody("login");
+
+    multiPart->append(textPartAction);
+    multiPart->append(textPartPassword);
+    multiPart->append(textPartLogin);
+    auto loginManager = new QNetworkAccessManager();
+    QNetworkReply *loginReply;
+    QNetworkRequest loginRequest;
+    loginRequest.setRawHeader("Content-Type", "multipart/form-data");
+    loginRequest.setUrl(QUrl("http://vega.fcyb.mirea.ru/auth/action.php"));
+    loginReply = loginManager->post(loginRequest,multiPart);
+    QEventLoop loginLoop;
+    connect(loginReply, SIGNAL(finished()), &loginLoop, SLOT(quit()));
+    loginLoop.exec();*/
     auto manager = new QNetworkAccessManager();
-    QNetworkCookieJar* cookie = new QNetworkCookieJar;
-    cookie->setCookiesFromUrl(*cookList ,QUrl("http://vega.fcyb.mirea.ru"));
-    manager->setCookieJar(cookie);
+    //QNetworkCookieJar* cookie = new QNetworkCookieJar;
+    //cookie->setCookiesFromUrl(*cookList ,QUrl("http://vega.fcyb.mirea.ru"));
     QJsonObject postObject
     {
            {"spec",m_codeEditor->toPlainText()},
@@ -103,7 +132,13 @@ void MainWindow::on_pushButton_clicked()
     QNetworkReply *reply;
     QNetworkRequest request;
     request.setRawHeader("Content-Type", "application/json");
-    request.setUrl(QUrl("127.0.0.1:8080/api/v1/specRunner"));
+    //cookieHeader->replace("PHPSESSID=","");
+    cookieHeader->replace(" path=/","");
+
+    request.setRawHeader("Cookie",*cookieHeader);
+    m_codeEditor->setText(*cookieHeader);
+    request.setUrl(QUrl("http://vega.fcyb.mirea.ru/testcpp/api/v1/specRunner"));
+    //manager->setCookieJar(loginManager->cookieJar());
     QByteArray postData;
     QJsonDocument postDocument;
     postDocument.setObject(postObject);
@@ -117,6 +152,7 @@ void MainWindow::on_pushButton_clicked()
     QJsonDocument wholeJsonReply = QJsonDocument::fromJson(wholeArrayReply);
     QJsonObject wholeJsonOblectReply = wholeJsonReply.object();
 
+    if (wholeJsonOblectReply.value(wholeJsonOblectReply.keys()[0]) == "specCompilerResult"){
     QJsonObject specCompilerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(0)).toObject();
     QString specCompilerResultInString(specCompilerResult.value(specCompilerResult.keys().at(0)).toString()+specCompilerResult.value(specCompilerResult.keys().at(1)).toString()+specCompilerResult.value(specCompilerResult.keys().at(2)).toString());
     specCompilerResultInString.replace(QString("(?:|\\u001[K"),QString("\n"));
@@ -150,6 +186,7 @@ void MainWindow::on_pushButton_clicked()
                 setTextTermFormatting(ui->textEdit_6,runnerResultInString);
             }
         }
+    }
     }
     //ui->tabWidget->setCurrentWidget(ui->tab_2);
     //ui->textEdit_3->append(root.keys().at(0) + ": " + root.value(root.keys().at(0)).toString());

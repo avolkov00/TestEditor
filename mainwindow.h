@@ -33,6 +33,7 @@ private:
     QCodeEditor* m_codeEditor2;
     QNetworkCookieJar* cook;
     QList<QNetworkCookie>* cookList;
+    QByteArray* cookieHeader;
     Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H
