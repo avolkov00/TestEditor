@@ -24,22 +24,29 @@
 #include <QHttpPart>
 #include <QList>
 #include <QNetworkCookie>
+#include <QMessageBox>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     ,m_codeEditor(nullptr)
     ,m_codeEditor2(nullptr)
     , ui(new Ui::MainWindow)
 {
-
     ui->setupUi(this);
     m_codeEditor = new QCodeEditor(this);
     m_codeEditor->setObjectName(QString::fromUtf8("codeEditor"));
-    m_codeEditor->setGeometry(QRect(90, 20, 221, 161));
+    m_codeEditor->setGeometry(QRect(40, 10, 450, 250));
     m_codeEditor2 = new QCodeEditor(this);
     m_codeEditor2->setObjectName(QString::fromUtf8("codeEditor2"));
-    m_codeEditor2->setGeometry(QRect(360, 20, 221, 161));
-    //Highlighter hl;
-  //  hl = new QSyntaxHighlighter (ui->textEdit);
+    m_codeEditor2->setGeometry(QRect(510, 10, 450, 250));
+    m_codeEditor->hide();
+    m_codeEditor2->hide();
+    ui->tabWidget->hide();
+    ui->textEdit->hide();
+    ui->textEdit_2->hide();
+    ui->pushButton->hide();
+
+
 }
 
 MainWindow::~MainWindow()
@@ -76,20 +83,34 @@ void MainWindow::on_pushButton_2_clicked()
     QEventLoop loop;
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
+    QMessageBox::critical(this,"Error",reply->rawHeader("Location"));
+
     if (reply->rawHeader("Location")=="login.php" ){
-        m_codeEditor2->setText("Negative Reply");
+        QMessageBox::critical(this,"Error","Invalid login or password");
+        ui->textEdit_7->clear();
+        ui->textEdit_8->clear();
     }
     else if (reply->rawHeader("Location")=="index.php" ){
-        m_codeEditor2->setText("Positive Reply");
+        ui->label->hide();
+        ui->label_2->hide();
+        ui->textEdit_7->hide();
+        ui->textEdit_8->hide();
+        ui->pushButton_2->hide();
+        m_codeEditor->show();
+        m_codeEditor2->show();
+        ui->tabWidget->show();
+        ui->textEdit->show();
+        ui->textEdit_2->show();
+        ui->pushButton->show();
     }
     else {
-        m_codeEditor2->setText(reply->rawHeader("Location"));
+        QMessageBox::critical(this,"Error","Unknown reply");
     }
     if (reply->hasRawHeader("Set-Cookie")){
-        m_codeEditor->setText("Yes");
+       // m_codeEditor->setText("Yes");
         cookieHeader =  new QByteArray(reply->rawHeader("Set-Cookie"));
     }
-    else m_codeEditor->setText("No");
+    //else m_codeEditor->setText("No");
 
     cookList = new QList<QNetworkCookie>((manager->cookieJar()->cookiesForUrl(QUrl("http://vega.fcyb.mirea.ru"))));
 }
@@ -133,7 +154,7 @@ void MainWindow::on_pushButton_clicked()
     QNetworkRequest request;
     request.setRawHeader("Content-Type", "application/json");
     //cookieHeader->replace("PHPSESSID=","");
-    cookieHeader->replace(" path=/","");
+    cookieHeader->replace("; path=/","");
 
     request.setRawHeader("Cookie",*cookieHeader);
     m_codeEditor->setText(*cookieHeader);
