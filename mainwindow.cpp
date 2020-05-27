@@ -19,6 +19,7 @@
 #include <QWidget>
 #include <QSyntaxHighlighter>
 #include <QCodeEditor>
+<<<<<<< HEAD
 #include <QNetworkCookieJar>
 #include <QHttpMultiPart>
 #include <QHttpPart>
@@ -26,6 +27,8 @@
 #include <QNetworkCookie>
 #include <QMessageBox>
 
+=======
+>>>>>>> parent of a9d987c... Исправлена авторизация
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     ,m_codeEditor(nullptr)
@@ -57,6 +60,7 @@ MainWindow::~MainWindow()
 #include <QTextEdit>
 void MainWindow::on_pushButton_2_clicked()
 {
+<<<<<<< HEAD
     QHttpMultiPart * multiPart = new QHttpMultiPart ( QHttpMultiPart :: FormDataType);
 
     QHttpPart textPartLogin;
@@ -113,6 +117,26 @@ void MainWindow::on_pushButton_2_clicked()
     //else m_codeEditor->setText("No");
 
     cookList = new QList<QNetworkCookie>((manager->cookieJar()->cookiesForUrl(QUrl("http://vega.fcyb.mirea.ru"))));
+=======
+    QJsonObject postObject
+    {
+           {"login",ui->textEdit_7->toPlainText()},
+           {"password",ui->textEdit_8->toPlainText()},
+           {"action","login"}
+
+    };
+    auto manager = new QNetworkAccessManager();
+    QNetworkReply *reply;
+    QNetworkRequest request;
+    request.setRawHeader("Content-Type", "application/json");
+    request.setUrl(QUrl("http://vega.fcyb.mirea.ru/testcpp/api/v1/specRunner"));
+    QByteArray postData;
+    QJsonDocument postDocument;
+    postDocument.setObject(postObject);
+    postData.append(postDocument.toJson());
+    reply = manager->post(request,postData);
+    cook=manager->cookieJar();
+>>>>>>> parent of a9d987c... Исправлена авторизация
 }
 void MainWindow::on_pushButton_clicked()
 {
