@@ -31,13 +31,9 @@ private slots:
 private:
     QCodeEditor* m_codeEditor;
     QCodeEditor* m_codeEditor2;
-<<<<<<< HEAD
     QNetworkCookieJar* cook;
     QList<QNetworkCookie>* cookList;
     QByteArray* cookieHeader;
-=======
-    QNetworkCookieJar* cook=0;
->>>>>>> parent of a9d987c... Исправлена авторизация
     Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H
