@@ -150,18 +150,32 @@ void MainWindow::on_pushButton_clicked()
     if (wholeJsonOblectReply["specCompilerResult"]!=0){
     QJsonObject specCompilerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(0)).toObject();
     QString specCompilerResultInString(specCompilerResult.value(specCompilerResult.keys().at(0)).toString()+specCompilerResult.value(specCompilerResult.keys().at(1)).toString()+specCompilerResult.value(specCompilerResult.keys().at(2)).toString());
-    specCompilerResultInString.replace(QString("?:[K|\\u001[K"),QString("\n"));
-    specCompilerResultInString.remove(QString("?:[m|\\u001[m"));
+    specCompilerResultInString.replace(QString("\\033[K"),QString("\n"));
+    specCompilerResultInString.replace(QString("\\u001[K"),QString("\n"));
+    specCompilerResultInString.replace(QString("[K"),QString("\n"));
+    specCompilerResultInString.remove(QString("\\033[m"));
+    specCompilerResultInString.remove(QString("\\u001[m"));
+    specCompilerResultInString.remove(QString("[m"));
     specCompilerResultInString.remove(QString("\\r"));
     specCompilerResultInString.replace(QString("\\n"),QString("\n"));
-    ui->textEdit_4->clear();
-    setTextTermFormatting(ui->textEdit_4,specCompilerResultInString);
+    if (specCompilerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
+        ui->textEdit_4->clear();
+        setTextTermFormatting(ui->textEdit_4,specCompilerResultInString);
+    }
+    else{
+        ui->textEdit_3->clear();
+        setTextTermFormatting(ui->textEdit_3,specCompilerResultInString);
+    }
 
     if (specCompilerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
         QJsonObject exampleCompilerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(1)).toObject();
         QString exampleCompilerResultInString=exampleCompilerResult.value(exampleCompilerResult.keys().at(0)).toString()+exampleCompilerResult.value(exampleCompilerResult.keys().at(1)).toString()+exampleCompilerResult.value(exampleCompilerResult.keys().at(2)).toString();
-        exampleCompilerResultInString.replace(QString("?:[K|\\u001[K"),QString("\n"));
-        exampleCompilerResultInString.remove(QString("?:[m|\\u001[m"));
+        exampleCompilerResultInString.replace(QString("\\033[K"),QString("\n"));
+        exampleCompilerResultInString.replace(QString("\\u001[K"),QString("\n"));
+        exampleCompilerResultInString.replace(QString("[K"),QString("\n"));
+        exampleCompilerResultInString.remove(QString("\\033[m"));
+        exampleCompilerResultInString.remove(QString("\\u001[m"));
+        exampleCompilerResultInString.remove(QString("[m"));
         exampleCompilerResultInString.remove(QString("\\r"));
         exampleCompilerResultInString.replace(QString("\\n"),QString("\n"));
         ui->textEdit_5->clear();
@@ -170,8 +184,12 @@ void MainWindow::on_pushButton_clicked()
         if(exampleCompilerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
             QJsonObject linkerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(2)).toObject();
             QString linkerResultInString(linkerResult.value(linkerResult.keys().at(0)).toString()+linkerResult.value(linkerResult.keys().at(1)).toString()+linkerResult.value(linkerResult.keys().at(2)).toString());
-            linkerResultInString.replace(QString("?:[K|\\u001[K"),QString("\n"));
-            linkerResultInString.remove(QString("?:[m|\\u001[m"));
+            linkerResultInString.replace(QString("\\033[K"),QString("\n"));
+            linkerResultInString.replace(QString("\\u001[K"),QString("\n"));
+            linkerResultInString.replace(QString("[K"),QString("\n"));
+            linkerResultInString.remove(QString("\\033[m"));
+            linkerResultInString.remove(QString("\\u001[m"));
+            linkerResultInString.remove(QString("[m"));
             linkerResultInString.remove(QString("\\r"));
             linkerResultInString.replace(QString("\\n"),QString("\n"));
             ui->textEdit_6->clear();
