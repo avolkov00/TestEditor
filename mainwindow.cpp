@@ -74,16 +74,18 @@ void MainWindow::on_pushButton_2_clicked()
     multiPart->append(textPartAction);
     multiPart->append(textPartPassword);
     multiPart->append(textPartLogin);
+
     auto manager = new QNetworkAccessManager();
+
     QNetworkReply *reply;
     QNetworkRequest request;
     request.setRawHeader("Content-Type", "multipart/form-data");
     request.setUrl(QUrl("http://vega.fcyb.mirea.ru/auth/action.php"));
+
     reply = manager->post(request,multiPart);
     QEventLoop loop;
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
-    QMessageBox::critical(this,"Error",reply->rawHeader("Location"));
 
     if (reply->rawHeader("Location")=="login.php" ){
         QMessageBox::critical(this,"Error","Invalid login or password");
@@ -107,117 +109,92 @@ void MainWindow::on_pushButton_2_clicked()
         QMessageBox::critical(this,"Error","Unknown reply");
     }
     if (reply->hasRawHeader("Set-Cookie")){
-       // m_codeEditor->setText("Yes");
         cookieHeader =  new QByteArray(reply->rawHeader("Set-Cookie"));
     }
-    //else m_codeEditor->setText("No");
-
-    cookList = new QList<QNetworkCookie>((manager->cookieJar()->cookiesForUrl(QUrl("http://vega.fcyb.mirea.ru"))));
 }
 void MainWindow::on_pushButton_clicked()
 {
-    /*QHttpMultiPart * multiPart = new QHttpMultiPart ( QHttpMultiPart :: FormDataType);
 
-    QHttpPart textPartLogin;
-    textPartLogin.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"login\""));
-    textPartLogin.setBody(ui->textEdit_7->toPlainText().toUtf8());
-
-    QHttpPart textPartPassword;
-    textPartPassword.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"password\""));
-    textPartPassword.setBody(ui->textEdit_8->toPlainText().toUtf8());
-
-    QHttpPart textPartAction;
-    textPartAction.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"action\""));
-    textPartAction.setBody("login");
-
-    multiPart->append(textPartAction);
-    multiPart->append(textPartPassword);
-    multiPart->append(textPartLogin);
-    auto loginManager = new QNetworkAccessManager();
-    QNetworkReply *loginReply;
-    QNetworkRequest loginRequest;
-    loginRequest.setRawHeader("Content-Type", "multipart/form-data");
-    loginRequest.setUrl(QUrl("http://vega.fcyb.mirea.ru/auth/action.php"));
-    loginReply = loginManager->post(loginRequest,multiPart);
-    QEventLoop loginLoop;
-    connect(loginReply, SIGNAL(finished()), &loginLoop, SLOT(quit()));
-    loginLoop.exec();*/
     auto manager = new QNetworkAccessManager();
-    //QNetworkCookieJar* cookie = new QNetworkCookieJar;
-    //cookie->setCookiesFromUrl(*cookList ,QUrl("http://vega.fcyb.mirea.ru"));
+
     QJsonObject postObject
     {
-           {"spec",m_codeEditor->toPlainText()},
-           {"example",m_codeEditor2->toPlainText()}
+           {"spec",m_codeEditor2->toPlainText()},
+           {"example",m_codeEditor->toPlainText()}
     };
+
     QNetworkReply *reply;
     QNetworkRequest request;
     request.setRawHeader("Content-Type", "application/json");
-    //cookieHeader->replace("PHPSESSID=","");
-    cookieHeader->replace("; path=/","");
 
+    cookieHeader->replace("; path=/","");
     request.setRawHeader("Cookie",*cookieHeader);
-    m_codeEditor->setText(*cookieHeader);
+
     request.setUrl(QUrl("http://vega.fcyb.mirea.ru/testcpp/api/v1/specRunner"));
-    //manager->setCookieJar(loginManager->cookieJar());
+
     QByteArray postData;
     QJsonDocument postDocument;
     postDocument.setObject(postObject);
     postData.append(postDocument.toJson());
+
     reply = manager->post(request,postData);
     QEventLoop loop;
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
+
     QByteArray wholeArrayReply = reply->readAll();
     QString wholeStringReply(wholeArrayReply);
     QJsonDocument wholeJsonReply = QJsonDocument::fromJson(wholeArrayReply);
     QJsonObject wholeJsonOblectReply = wholeJsonReply.object();
 
-    if (wholeJsonOblectReply.value(wholeJsonOblectReply.keys()[0]) == "specCompilerResult"){
+    if (wholeJsonOblectReply["specCompilerResult"]!=0){
     QJsonObject specCompilerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(0)).toObject();
     QString specCompilerResultInString(specCompilerResult.value(specCompilerResult.keys().at(0)).toString()+specCompilerResult.value(specCompilerResult.keys().at(1)).toString()+specCompilerResult.value(specCompilerResult.keys().at(2)).toString());
-    specCompilerResultInString.replace(QString("(?:|\\u001[K"),QString("\n"));
-    specCompilerResultInString.remove(QString("(?:|\\u001[m"));
+    specCompilerResultInString.replace(QString("?:[K|\\u001[K"),QString("\n"));
+    specCompilerResultInString.remove(QString("?:[m|\\u001[m"));
     specCompilerResultInString.remove(QString("\\r"));
     specCompilerResultInString.replace(QString("\\n"),QString("\n"));
-    setTextTermFormatting(ui->textEdit_3,specCompilerResultInString);
+    ui->textEdit_4->clear();
+    setTextTermFormatting(ui->textEdit_4,specCompilerResultInString);
 
     if (specCompilerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
         QJsonObject exampleCompilerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(1)).toObject();
         QString exampleCompilerResultInString=exampleCompilerResult.value(exampleCompilerResult.keys().at(0)).toString()+exampleCompilerResult.value(exampleCompilerResult.keys().at(1)).toString()+exampleCompilerResult.value(exampleCompilerResult.keys().at(2)).toString();
-        exampleCompilerResultInString.remove(QString("(?:|\\u001[m"));
+        exampleCompilerResultInString.replace(QString("?:[K|\\u001[K"),QString("\n"));
+        exampleCompilerResultInString.remove(QString("?:[m|\\u001[m"));
         exampleCompilerResultInString.remove(QString("\\r"));
         exampleCompilerResultInString.replace(QString("\\n"),QString("\n"));
-        setTextTermFormatting(ui->textEdit_4,exampleCompilerResultInString);
+        ui->textEdit_5->clear();
+        setTextTermFormatting(ui->textEdit_5,exampleCompilerResultInString);
 
         if(exampleCompilerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
             QJsonObject linkerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(2)).toObject();
             QString linkerResultInString(linkerResult.value(linkerResult.keys().at(0)).toString()+linkerResult.value(linkerResult.keys().at(1)).toString()+linkerResult.value(linkerResult.keys().at(2)).toString());
-            linkerResultInString.remove(QString("(?:|\\u001[m"));
+            linkerResultInString.replace(QString("?:[K|\\u001[K"),QString("\n"));
+            linkerResultInString.remove(QString("?:[m|\\u001[m"));
             linkerResultInString.remove(QString("\\r"));
             linkerResultInString.replace(QString("\\n"),QString("\n"));
-            setTextTermFormatting(ui->textEdit_5,linkerResultInString);
+            ui->textEdit_6->clear();
+            setTextTermFormatting(ui->textEdit_6,linkerResultInString);
 
             if(linkerResult.value(specCompilerResult.keys().at(0)).toInt()!=1){
                 QJsonObject runnerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(3)).toObject();
                 QString runnerResultInString(runnerResult.value(runnerResult.keys().at(0)).toString()+runnerResult.value(runnerResult.keys().at(1)).toString()+runnerResult.value(runnerResult.keys().at(2)).toString());
-                runnerResultInString.remove(QString("(?:|\\u001[m"));
+                runnerResultInString.replace(QString("\\033[K"),QString("\n"));
+                runnerResultInString.replace(QString("\\u001[K"),QString("\n"));
+                runnerResultInString.replace(QString("[K"),QString("\n"));
+                runnerResultInString.remove(QString("\\033[m"));
+                runnerResultInString.remove(QString("\\u001[m"));
+                runnerResultInString.remove(QString("[m"));
                 runnerResultInString.remove(QString("\\r"));
                 runnerResultInString.replace(QString("\\n"),QString("\n"));
-                setTextTermFormatting(ui->textEdit_6,runnerResultInString);
+                ui->textEdit_3->clear();
+                setTextTermFormatting(ui->textEdit_3,runnerResultInString);
             }
         }
     }
     }
-    //ui->tabWidget->setCurrentWidget(ui->tab_2);
-    //ui->textEdit_3->append(root.keys().at(0) + ": " + root.value(root.keys().at(0)).toString());
-   // ui->textEdit_3->setText(jsonObject["specCompilerResult"].toString());
-    //dataReply.replace(QString("\\u001b[K"),QString(""));
-  //  dataReply.remove(QString("\\u001b[m"));
-  //  dataReply.replace(QString("\\r\\n"),QString(""));
-    //ui->textEdit->setText(dataReply);
-    //setTextTermFormatting(ui->textEdit,dataReply);
-   //
+
 }
 
 void MainWindow::parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat)
