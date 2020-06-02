@@ -57,6 +57,7 @@ MainWindow::~MainWindow()
 #include <QTextEdit>
 void MainWindow::on_pushButton_2_clicked()
 {
+    ui->pushButton_2->hide();
     QHttpMultiPart * multiPart = new QHttpMultiPart ( QHttpMultiPart :: FormDataType);
 
     QHttpPart textPartLogin;
@@ -65,7 +66,7 @@ void MainWindow::on_pushButton_2_clicked()
 
     QHttpPart textPartPassword;
     textPartPassword.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"password\""));
-    textPartPassword.setBody(ui->textEdit_8->toPlainText().toUtf8());
+    textPartPassword.setBody(ui->lineEdit->text().toUtf8());
 
     QHttpPart textPartAction;
     textPartAction.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"action\""));
@@ -79,7 +80,7 @@ void MainWindow::on_pushButton_2_clicked()
 
     QNetworkReply *reply;
     QNetworkRequest request;
-    request.setRawHeader("Content-Type", "multipart/form-data");
+    //request.setRawHeader("Content-Type", "multipart/form-data");
     request.setUrl(QUrl("http://vega.fcyb.mirea.ru/auth/action.php"));
 
     reply = manager->post(request,multiPart);
@@ -87,16 +88,18 @@ void MainWindow::on_pushButton_2_clicked()
     connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
 
-    if (reply->rawHeader("Location")=="login.php" ){
+     ui->pushButton_2->show();
+
+    if (reply->rawHeader("Location")=="../login.php" ){
         QMessageBox::critical(this,"Error","Invalid login or password");
         ui->textEdit_7->clear();
-        ui->textEdit_8->clear();
+        ui->lineEdit->clear();
     }
-    else if (reply->rawHeader("Location")=="index.php" ){
+    else {
         ui->label->hide();
         ui->label_2->hide();
         ui->textEdit_7->hide();
-        ui->textEdit_8->hide();
+        ui->lineEdit->hide();
         ui->pushButton_2->hide();
         m_codeEditor->show();
         m_codeEditor2->show();
@@ -105,16 +108,13 @@ void MainWindow::on_pushButton_2_clicked()
         ui->textEdit_2->show();
         ui->pushButton->show();
     }
-    else {
-        QMessageBox::critical(this,"Error","Unknown reply");
-    }
     if (reply->hasRawHeader("Set-Cookie")){
         cookieHeader =  new QByteArray(reply->rawHeader("Set-Cookie"));
     }
 }
 void MainWindow::on_pushButton_clicked()
 {
-
+    ui->pushButton->hide();
     auto manager = new QNetworkAccessManager();
 
     QJsonObject postObject
@@ -146,6 +146,8 @@ void MainWindow::on_pushButton_clicked()
     QString wholeStringReply(wholeArrayReply);
     QJsonDocument wholeJsonReply = QJsonDocument::fromJson(wholeArrayReply);
     QJsonObject wholeJsonOblectReply = wholeJsonReply.object();
+
+    ui->pushButton->show();
 
     if (wholeJsonOblectReply["specCompilerResult"]!=0){
     QJsonObject specCompilerResult = wholeJsonOblectReply.value(wholeJsonOblectReply.keys().at(0)).toObject();
